@@ -1,68 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
+import './eqliptiq.css';
 
-/*
- * EDIT THIS BECAUSE NO GOOD
- * REMOVE BLOAT
- * KEEP PINK/BLUE. GOOD COLOUR. the prompt
-*/
+// Static configuration to prevent unnecessary recalculations
+const COLORS = {
+  primary: 'white',
+  accent1: '#f0f', // Magenta for "eq"
+  accent2: '#0ff', // Cyan for "iq"
+  shadowColors: ['#0ff', '#f0f', '#333'] // Fixed shadow color order
+};
+
+// Pre-allocated array to hold shadow values (minimizes garbage collection)
+const shadowCache = new Array(COLORS.shadowColors.length);
+
+/**
+ * Generates a CSS text-shadow string with minimal object allocation.
+ * @returns {string} A text-shadow CSS value composed of three shadow values.
+ * 
+ * Time Complexity: O(n) where n is shadowColors.length (constant: 3)
+ * Space Complexity: O(1) (reuses pre-allocated array)
+ */
+const generateShadows = () => {
+  for (let i = 0; i < COLORS.shadowColors.length; i++) {
+    // Calculate random offsets and blur value
+    const offsetX = (Math.random() * 10 - 5).toFixed(2);
+    const offsetY = (Math.random() * 10 - 5).toFixed(2);
+    const blur = (5 + Math.random() * 5).toFixed(2);
+    shadowCache[i] = `${offsetX}px ${offsetY}px ${blur}px ${COLORS.shadowColors[i]}`;
+  }
+  return shadowCache.join(', ');
+};
 
 const EqliptiqHeader = () => {
-  // State for storing dynamic shadow properties
-  const [shadows, setShadows] = useState([]);
+  // DOM reference to update styles directly without triggering re-renders
+  const h1Ref = useRef(null);
   
-  // Color configuration object for easy maintenance
-  const colors = {
-    primary: 'white',
-    accent2: '#0ff',  // Cyan for "eq"
-    accent1: '#f0f',  // Magenta for "iq"
-    shadowColors: ['#0ff', '#f0f', '#333'] // Neon shadows + dark shadow
-  };
+  // Store the initial shadow configuration to avoid recalculating on mount
+  const initialShadow = useRef(generateShadows());
 
-  // Shadow animation effect
+  /**
+   * Animation effect to update text-shadow using direct DOM manipulation.
+   * This avoids React state updates, keeping re-render cycles to a minimum.
+   * The function throttles the updates to ~30fps.
+   */
   useEffect(() => {
-    const generateShadows = () => {
-      const newShadows = colors.shadowColors.map((color, index) => ({
-        x: Math.random() * 10 - 5,  // Random X position (-5 to 5)
-        y: Math.random() * 10 - 5,  // Random Y position (-5 to 5)
-        blur: 5 + Math.random() * 5, // Blur between 5-10px
-        color: color
-      }));
-      setShadows(newShadows);
+    let animationFrame;
+    let lastUpdate = 0;
+    const throttleMs = 15; // ~30fps throttle
+
+    const updateShadows = (timestamp) => {
+      if (!h1Ref.current) return;
+      if (timestamp - lastUpdate > throttleMs) {
+        h1Ref.current.style.textShadow = generateShadows();
+        lastUpdate = timestamp;
+      }
+      animationFrame = requestAnimationFrame(updateShadows);
     };
 
-    // Initial call to avoid empty first render
-    generateShadows();
+    animationFrame = requestAnimationFrame(updateShadows);
     
-    // Set up animation interval
-    const interval = setInterval(generateShadows, 50);
-    return () => clearInterval(interval);
-  }, [colors.shadowColors]);
-
-  // Convert shadow objects to CSS string
-  const shadowCSS = shadows.map(s => 
-    `${s.x}px ${s.y}px ${s.blur}px ${s.color}`
-  ).join(', ');
+    // Cleanup to cancel animation when the component unmounts
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
 
   return (
-    <div style={{ 
-      background: colors.background, 
-      padding: '2rem',
-      display: 'inline-block'
-    }}>
-      <h1 style={{
-        color: colors.primary,
-        textShadow: shadowCSS,
-        fontSize: '3rem',
-        fontWeight: 'bold',
-        transition: 'text-shadow 0.5s ease-out'
-      }}>
-        {/* Accentuated parts with neon colors */}
-        <span style={{ color: colors.accent1 }}>eq</span>
-        lipt
-        <span style={{ color: colors.accent2 }}>iq</span>
+    <div className="eqliptiq-header">
+      {/* The initial text-shadow is applied via inline style; further updates are done via DOM */}
+      <h1
+        className="eqliptiq-heading"
+        style={{ textShadow: initialShadow.current }}
+        ref={h1Ref}
+      >
+        <span className="eqliptiq-accent1">eq</span>
+        <span className="eqliptiq-transition">lipt</span>
+        <span className="eqliptiq-accent2">iq</span>
       </h1>
     </div>
   );
 };
 
-export default EqliptiqHeader;
+// Wrap with React.memo to avoid unnecessary re-renders from parent updates
+export default React.memo(EqliptiqHeader);

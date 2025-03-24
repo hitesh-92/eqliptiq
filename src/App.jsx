@@ -7,6 +7,19 @@ function App() {
   const [quizSelected, setQuizSelected] = useState(false)
   const [quizData, setQuizData] = useState({})
 
+  return(
+
+    <div style={{ padding:"5em 10em"}}>
+      <EqliptiqHeader />
+      <h3>Test your limits and enter mastry</h3>
+      <p>{`"From struggle to flow, from thought to instinct—the art of mastery is becoming what you do."${`\n`}`}<em>- Abaraham Maslow</em></p>
+      <p style={{marginTop:"10vh"}}>Eqliptiq (ec-lip-tic) is a multi-sensory quiz-based learning platform</p>
+      <p>Inspired by techniques from mad geniuses like Salvitore Dali to PhD Academics</p>
+      <p style={{textAlign:"center"}}><em>Discover Here... Coming soon...</em></p>
+    </div>
+
+  )
+
   return (
     <div>
       <EqliptiqHeader />
@@ -20,9 +33,12 @@ function App() {
           *Questions will be selected at random
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>     
+
+      {
+        quizSelected ?
+        <QuizSelect /> :
+        <QuizPlay/>
+      }     
 
       
     </div>
@@ -48,7 +64,7 @@ function QuizSelect(){
         // setQuizSelected:true        
         setShowCustomQuiz(!showCustomQuiz)
         setShowFastFive(!showFastFive)
-
+        setQuizSelected(!quizSelected)
         // setQuizSelected:true
         // put up loader
         // getQuiz
@@ -58,8 +74,14 @@ function QuizSelect(){
        }} ></button>
     </div>
   })
+
+  return(<>{quizList}</>)
  
 
+}
+
+function QuizPlay(){
+  return(<p>Play</p>)
 }
 
 function getQuizData(isCustom){

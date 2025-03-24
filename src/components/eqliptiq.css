@@ -1,0 +1,35 @@
+/* Container styles for the header component */
+.eqliptiq-header {
+  padding: 2rem;
+  display: inline-block;
+}
+
+/* Main heading styles with a smooth transition for text-shadow changes */
+.eqliptiq-heading {
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+  transition: text-shadow 0.5s ease-out;
+}
+
+/* Accent color styles */
+.eqliptiq-accent1 {
+  color: #f0f; /* Magenta */
+}
+
+.eqliptiq-accent2 {
+  color: #0ff; /* Cyan */
+}
+
+/* Animated text color transition */
+.eqliptiq-transition {
+  animation: colorShift 8s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* Keyframes for the color shifting animation */
+@keyframes colorShift {
+  0% { color: #f0f; }   /* Magenta */
+  50% { color: #0ff; }  /* Cyan */
+  100% { color: #f0f; } /* Magenta */
+}
