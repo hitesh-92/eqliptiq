@@ -1,27 +1,21 @@
 import React, { useRef, useEffect } from 'react';
 import './eqliptiq.css';
 
-// Static configuration to prevent unnecessary recalculations
+// Simplified configuration with only necessary colors for shadows.
 const COLORS = {
-  primary: 'white',
-  accent1: '#f0f', // Magenta for "eq"
-  accent2: '#0ff', // Cyan for "iq"
-  shadowColors: ['#0ff', '#f0f', '#333'] // Fixed shadow color order
+  shadowColors: ['#0ff', '#f0f', '#333']
 };
 
-// Pre-allocated array to hold shadow values (minimizes garbage collection)
+// Pre-allocated array to reduce garbage collection.
 const shadowCache = new Array(COLORS.shadowColors.length);
 
 /**
- * Generates a CSS text-shadow string with minimal object allocation.
- * @returns {string} A text-shadow CSS value composed of three shadow values.
- * 
- * Time Complexity: O(n) where n is shadowColors.length (constant: 3)
- * Space Complexity: O(1) (reuses pre-allocated array)
+ * Generates a CSS text-shadow string with minimal allocations.
+ * Iterates over the shadow colors, assigning random offsets and blur values.
  */
 const generateShadows = () => {
   for (let i = 0; i < COLORS.shadowColors.length; i++) {
-    // Calculate random offsets and blur value
+    // Calculate random offsets and blur with two decimal precision.
     const offsetX = (Math.random() * 10 - 5).toFixed(2);
     const offsetY = (Math.random() * 10 - 5).toFixed(2);
     const blur = (5 + Math.random() * 5).toFixed(2);
@@ -31,22 +25,19 @@ const generateShadows = () => {
 };
 
 const EqliptiqHeader = () => {
-  // DOM reference to update styles directly without triggering re-renders
   const h1Ref = useRef(null);
-  
-  // Store the initial shadow configuration to avoid recalculating on mount
+  // Store initial shadow configuration to avoid triggering re-render.
   const initialShadow = useRef(generateShadows());
 
-  /**
-   * Animation effect to update text-shadow using direct DOM manipulation.
-   * This avoids React state updates, keeping re-render cycles to a minimum.
-   * The function throttles the updates to ~30fps.
-   */
   useEffect(() => {
     let animationFrame;
     let lastUpdate = 0;
-    const throttleMs = 15; // ~30fps throttle
+    const throttleMs = 15; // roughly 30fps throttle interval
 
+    /**
+     * Animation loop to update text-shadow for a dynamic effect.
+     * Throttled to reduce unnecessary calculations.
+     */
     const updateShadows = (timestamp) => {
       if (!h1Ref.current) return;
       if (timestamp - lastUpdate > throttleMs) {
@@ -57,26 +48,21 @@ const EqliptiqHeader = () => {
     };
 
     animationFrame = requestAnimationFrame(updateShadows);
-    
-    // Cleanup to cancel animation when the component unmounts
     return () => cancelAnimationFrame(animationFrame);
   }, []);
 
   return (
     <div className="eqliptiq-header">
-      {/* The initial text-shadow is applied via inline style; further updates are done via DOM */}
       <h1
         className="eqliptiq-heading"
         style={{ textShadow: initialShadow.current }}
         ref={h1Ref}
       >
-        <span className="eqliptiq-accent1">eq</span>
-        <span className="eqliptiq-transition">lipt</span>
-        <span className="eqliptiq-accent2">iq</span>
+        eqliptiq
       </h1>
     </div>
   );
 };
 
-// Wrap with React.memo to avoid unnecessary re-renders from parent updates
+// Using React.memo to prevent unnecessary re-renders if props/state don't change.
 export default React.memo(EqliptiqHeader);
